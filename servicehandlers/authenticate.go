@@ -29,8 +29,8 @@ func (p AuthenticateHandler) Put(r *http.Request) SrvcRes {
 func (p AuthenticateHandler) Post(r *http.Request) SrvcRes {
 
 	type authenticateBody struct {
-		Email    string
-		Password string
+		Email    string `json:"email"`
+		Password string `json:"password"`
 	}
 
 	var payload authenticateBody
@@ -41,11 +41,16 @@ func (p AuthenticateHandler) Post(r *http.Request) SrvcRes {
 		panic(err)
 	}
 
+	user := dao.GetUserByEmail(payload.Email)
+	if (user == dao.User{}) {
+		return SimpleBadRequest("User doesn't Exist")
+	}
+
 	if !dao.AuthenticateUser(payload.Email, payload.Password) {
 		return SimpleBadRequest("Invalid Email or Password")
 	}
-	user := dao.GetUserByEmail(payload.Email)
-	// token := dao.CreateSession(user.ID)
 
-	return Response200OK(user.Email)
+	sesion := dao.CreateSession(payload.Email)
+
+	return Response200OK(sesion)
 }

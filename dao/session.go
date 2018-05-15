@@ -1,7 +1,9 @@
 package dao
 
 import (
+	"database/sql"
 	"fmt"
+	"log"
 	"time"
 
 	uuid "github.com/satori/go.uuid"
@@ -9,9 +11,9 @@ import (
 
 // Session : Structure of a session in SessionDB
 type Session struct {
-	UserID    int
-	Token     string
-	LastLogin time.Time
+	UserID    int       `json:"user_id"`
+	Token     string    `json:"token"`
+	LastLogin time.Time `json:"login_time"`
 }
 
 // GetAllSession : Returns all the User Sessions
@@ -28,17 +30,26 @@ func GetAllSession() []Session {
 }
 
 //CreateSession : Creates a new session for a user
-func CreateSession(userID string) string {
+func CreateSession(email string) Session {
 
 	token := createUID()
+	us := GetSessionByEmail(email)
 
-	err := db.QueryRow("Insert into session (user_id, token) values ($1, $2)", userID, token)
+	var err error
+
+	if (us == Session{}) {
+		usr := GetUserByEmail(email)
+		_, err = db.Exec("Insert into session (user_id, token, login_time) values ($1, $2, $3)", usr.ID, token, time.Now())
+	} else {
+		_, err = db.Exec("Update session set token=$1, login_time=$2 where user_id=$3", token, time.Now(), us.UserID)
+	}
 
 	if err != nil {
-		panic(err)
+		log.Fatal("Error in CreateSession", err)
 	}
-	// return token
-	return ""
+
+	us = GetSessionByEmail(email)
+	return us
 }
 
 func createUID() uuid.UUID {
@@ -50,13 +61,53 @@ func createUID() uuid.UUID {
 	return uid
 }
 
-// AuthenticateSession : Authenticates the token
-func AuthenticateSession(token string) bool {
+// GetSessionByToken : Returns Session corresponding to token
+func GetSessionByToken(token string) Session {
 	var us Session
-	err := db.QueryRow("Select * from Session where token=$1", token).Scan(&us.UserID, &us.Token)
+	err := db.QueryRow("Select * from Session where token=$1", token).Scan(&us.UserID, &us.Token, &us.LastLogin)
+
+	if err == sql.ErrNoRows {
+		return (Session{})
+	} else if err != nil {
+		log.Fatal("Error in SessionDB", err)
+	}
+	return us
+}
+
+// GetSessionByEmail : Returns Session corresponding to token
+func GetSessionByEmail(email string) Session {
+
+	var us Session
+
+	query := `Select * from Session where user_id =
+				(Select user_id from users where email=$1)`
+
+	err := db.QueryRow(query, email).Scan(&us.UserID, &us.Token, &us.LastLogin)
+
+	if err == sql.ErrNoRows {
+		return (Session{})
+	} else if err != nil {
+		log.Fatal("Error in SessionDB", err)
+	}
+	return us
+}
+
+// DeleteSession : Deletes the Session
+func DeleteSession(userID int) {
+	query := "Delete from SESSION where user_id=$1"
+
+	_, err := db.Exec(query, userID)
 
 	if err != nil {
-		// panic(err)
+		log.Fatal("Error in DeleteSession")
+	}
+}
+
+// AuthenticateSession : Authenticates the token
+func AuthenticateSession(token string) bool {
+
+	session := GetSessionByToken(token)
+	if (session == Session{}) {
 		return false
 	}
 	return true

@@ -1,0 +1,157 @@
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular-animate.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular-sanitize.js"></script>
+  <script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-2.5.0.js"></script>
+  <link href="https://netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<style>
+      .panel > .panel-heading {
+          background-image: none;
+          background-color: #006666;
+          color: white;
+          border: 1px solid #006666; 
+      }
+
+      .panel {
+          border: 1px solid #006666;
+      }
+</style>
+
+<body>
+    <div ng-app="myApp" ng-controller="myCtrl" style="margin-left:10%;margin-right:10%;margin-top:50px;width:80%" >
+
+        <h1 style="text-align:center;font-size:450%;font-family:'Times New Roman'" >Book My Show</h1>
+        <br>
+        <br>
+
+        <ul class="nav nav-tabs">
+            <li class="active">
+                <a data-toggle="tab" href="#login">Login as existing user</a>
+            </li>
+            <li>
+                <a data-toggle="tab" href="#register">Register a new user</a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+
+            <div id="login" class="tab-pane fade in active">
+                <div style="width:80%;margin:auto">
+                    <br><br>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="text" class="form-control" id="email" ng-model="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="pwd">Password:</label>
+                        <input type="password" class="form-control" id="pwd" ng-model="password">
+                    </div>
+                    <button type="button" ng-click="login()" class="btn btn-block btn-primary">    
+                        Login
+                    </button>
+                </div>
+            </div>
+
+            <div id="register" class="tab-pane fade">                
+                <div style="width:80%;margin:auto">
+                    <br>
+                    <br>
+                    <div class="form-group">
+                        <label for="alias">Name:</label>
+                        <input type="text" class="form-control" id="sign_name" ng-model="sign_name">
+                    </div>
+                    <div class="form-group">
+                        <label for="usr">Email:</label>
+                        <input type="text" class="form-control" id="sign_email" ng-model="sign_email">
+                    </div>
+                    <div class="form-group">
+                        <label for="pwd">Password:</label>
+                        <input type="password" class="form-control" id="sign_password" ng-model="sign_password">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone Number:</label>
+                        <input type="text" class="form-control" id="sign_phone" ng-model="sign_phone">
+                    </div>
+                    <button type="button" ng-click="signup()" class="btn btn-block btn-primary">
+                        Sign up
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+                
+
+    </div>
+</body>
+
+
+<script>
+    var app = angular.module('myApp', ['ui.bootstrap']);
+    app.controller('myCtrl', function($scope, $http, $timeout, $interval, $q) {
+        $scope.service_url = "http://localhost:8080/";
+        
+        $scope.login = function() {
+            $http(
+                {
+                    url: $scope.service_url + "bms/authenticate/",
+                    method: 'POST',
+                    data: {
+                        email: $scope.email,
+                        password: $scope.password 
+                    }
+                }
+            ).then(
+                function(response) {
+                    console.log(response.data.responseData)
+                    localStorage.setItem("token",response.data.responseData.token)
+                    localStorage.setItem("user_id",response.data.responseData.user_id)
+
+                    window.location.href = "bms/surveyslist.html";
+                },
+                function(response) {
+                    alert(response.data.message)
+                }     
+            ) 
+        } 
+
+
+        $scope.signup = function() {
+            $http(
+                {
+                    url: $scope.service_url + "bms/users/",
+                    method: 'POST',
+                    data: {
+                        name: $scope.sign_name,
+                        email: $scope.sign_email,
+                        password: $scope.sign_password,
+                        phone: $scope.sign_phone,
+                    }
+                }
+            ).then(
+                function(response) {
+                    // localStorage.token = response.data.responseData.token
+                    alert("User Added Successfully")
+                    window.location.href = $scope.service_url;
+                },
+                function(response) {
+                    alert(response.data.message)
+                }     
+            ) 
+        } 
+
+    })
+</script>
+
+</html>

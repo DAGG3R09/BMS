@@ -2,8 +2,8 @@ package dao
 
 import (
 	"bookmyshow/utils"
+	"database/sql"
 	"fmt"
-	"log"
 )
 
 //User : The User Table schema
@@ -44,8 +44,10 @@ func GetUserByEmail(email string) User {
 
 	err := db.QueryRow("Select * from users where email=$1", email).Scan(&user.ID, &user.Email, &user.Name, &user.Password, &user.Phone)
 
-	if err != nil {
-		fmt.Println(">>", err)
+	if err == sql.ErrNoRows {
+		return User{}
+	} else if err != nil {
+		fmt.Println("GetUserByEmail >>", err)
 		return User{}
 	}
 
@@ -55,20 +57,29 @@ func GetUserByEmail(email string) User {
 //AuthenticateUser : Compares the entered password with pass of user
 func AuthenticateUser(email string, password string) bool {
 	user := GetUserByEmail(email)
+	pass := utils.GetMD5Hash(password)
 
-	if utils.GetMD5Hash(password) == user.Password {
+	if pass == user.Password {
 		return true
 	}
 	return false
 }
 
 // CreateUser : Creates a user in database
-func CreateUser(email string, name string, password string, phone string) {
+func CreateUser(user User) bool {
 
-	pass := utils.GetMD5Hash(password)
-	err := db.QueryRow("Insert into users (email, name, pwd) values ($1, $2, $3, $4)", email, name, pass, phone)
+	u := GetUserByEmail(user.Email)
 
-	if err != nil {
-		log.Fatal("Error in insert", err)
+	if (u != User{}) {
+		return false
 	}
+
+	pass := utils.GetMD5Hash(user.Password)
+	db.QueryRow("Insert into users (email, name, pwd, phone) values ($1, $2, $3, $4)", user.Email, user.Name, pass, user.Phone)
+
+	// if err != nil {
+	// log.Fatal("Error in insert", err)
+	// 	return "Internal Server Error: Error in User Insert"
+	// }
+	return true
 }

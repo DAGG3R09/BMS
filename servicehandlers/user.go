@@ -2,7 +2,9 @@ package servicehandlers
 
 import (
 	"bookmyshow/dao"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -27,7 +29,18 @@ func (p UserHandler) Put(r *http.Request) SrvcRes {
 	return ResponseNotImplemented()
 }
 
-// Post : Restful Post Method
+// Post : Restful Post Method - User Signup
 func (p UserHandler) Post(r *http.Request) SrvcRes {
-	return ResponseNotImplemented()
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		panic(err)
+	}
+	var cred dao.User
+	err = json.Unmarshal(body, &cred)
+	res := dao.CreateUser(cred)
+	if !res {
+		return SimpleBadRequest("User Already Present!")
+	} else {
+		return Response200OK(res)
+	}
 }

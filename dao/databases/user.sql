@@ -51,6 +51,7 @@ Create table Booked_Tickets(
 
 drop table Session;
 Create Table Session(
-    user_id int REFERENCES Users(user_id)
-    token varchar(50) Unique
+    user_id int REFERENCES Users(user_id),
+    token char(36) Unique,
+    login_time TIMESTAMPTZ
 );
