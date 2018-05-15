@@ -7,18 +7,21 @@ import (
 
 // Show : Show Table Schema
 type Show struct {
-	ID           int
-	MovieID      int
-	MultiplexID  int
-	Showtime     time.Time
-	ScreenNumber int
+	ID            int
+	MovieID       int       `json:"movie_id"`
+	MultiplexID   int       `json:"multiplex_id"`
+	ShowDate      time.Time `json:"show_date"`
+	Showtime      time.Time `json:"show_time"`
+	ScreenNumber  int       `json:"screen_no"`
+	MovieName     string    `json:"movie_name"`
+	MultiplexName string    `json:"multiplex_name"`
 }
 
 // GetAllShows : Returns all Shows form ShowsDB
 func GetAllShows() []Show {
 	var shows []Show
 
-	rows, err := db.Query("Select * from Shows")
+	rows, err := db.Query("Select * from Show")
 
 	if err != nil {
 		panic(err)
@@ -31,24 +34,28 @@ func GetAllShows() []Show {
 			&show.ID,
 			&show.MovieID,
 			&show.MultiplexID,
+			&show.Showtime,
+			&show.ShowDate,
 			&show.ScreenNumber,
-			&show.Showtime)
+			&show.MovieName,
+			&show.MultiplexName)
 
 		if err != nil {
 			panic(err)
 		}
+		show.ShowDate.Format("2006-01-02")
 		shows = append(shows, show)
 	}
 
 	return shows
 }
 
-// GetAllShowsByMovie : Returns all Shows form ShowsDB
+// GetShowsByMovieID : Returns all Shows form ShowsDB
 // // by movieID
-func GetAllShowsByMovie(movieID int) []Show {
+func GetShowsByMovieID(movieID int) []Show {
 	var shows []Show
 
-	rows, err := db.Query(`Select * from Shows 
+	rows, err := db.Query(`Select * from Show
 		where movie_id=$1`, movieID)
 
 	if err != nil {
@@ -62,24 +69,28 @@ func GetAllShowsByMovie(movieID int) []Show {
 			&show.ID,
 			&show.MovieID,
 			&show.MultiplexID,
+			&show.ShowDate,
+			&show.Showtime,
 			&show.ScreenNumber,
-			&show.Showtime)
+			&show.MovieName,
+			&show.MultiplexName)
 
 		if err != nil {
 			panic(err)
 		}
+		show.ShowDate.Format("2006-01-02")
 		shows = append(shows, show)
 	}
 
 	return shows
 }
 
-// GetAllShowsByMultiplex : Returns all Shows form ShowsDB
+// GetShowsByMultiplexID : Returns all Shows form ShowsDB
 // by multiplexID
-func GetAllShowsByMultiplex(multiplexID int) []Show {
+func GetShowsByMultiplexID(multiplexID int) []Show {
 	var shows []Show
 
-	rows, err := db.Query(`Select * from Shows where
+	rows, err := db.Query(`Select * from Show where
 		 multiplex_id=$1`, multiplexID)
 
 	if err != nil {
@@ -93,8 +104,11 @@ func GetAllShowsByMultiplex(multiplexID int) []Show {
 			&show.ID,
 			&show.MovieID,
 			&show.MultiplexID,
+			&show.Showtime,
+			&show.ShowDate,
 			&show.ScreenNumber,
-			&show.Showtime)
+			&show.MovieName,
+			&show.MultiplexName)
 
 		if err != nil {
 			panic(err)
@@ -109,18 +123,23 @@ func GetAllShowsByMultiplex(multiplexID int) []Show {
 func GetSingleShow(showID int) Show {
 	var show Show
 
-	query := "Select * from users where Show_id=$1"
+	query := "Select * from show where Show_id=$1"
 
 	err := db.QueryRow(query, showID).Scan(
 		&show.ID,
 		&show.MovieID,
 		&show.MultiplexID,
+		&show.Showtime,
+		&show.ShowDate,
 		&show.ScreenNumber,
-		&show.Showtime)
+		&show.MovieName,
+		&show.MultiplexName)
 
 	if err != nil {
 		return Show{}
 	}
+
+	show.ShowDate.Format("2006-01-02")
 
 	return show
 }
@@ -129,8 +148,8 @@ func GetSingleShow(showID int) Show {
 func CreateShow(movieID int, multiplexID int,
 	showtime time.Time, screenNo int) {
 
-	query := `Insert into Shows 
-	(show_id, movie_id, multiplex_id, showtime, screen_no) 
+	query := `Insert into Show
+	(show_id, movie_id, multiplex_id,showdate, showtime, screen_no) 
 	values ($1, $2, $3, $4)`
 
 	err := db.QueryRow(query, movieID, multiplexID, showtime, screenNo)

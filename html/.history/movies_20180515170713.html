@@ -1,0 +1,221 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/lib/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+    <script src="/lib/jquery-3.3.1.min.js"></script>
+    <script src="/lib/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+
+    <script src="/lib/angular-1.6.1/angular.js"></script>
+    <script src="/lib/angular-1.6.1/angular-animate.js"></script>
+    <script src="/lib/angular-1.6.1/angular-sanitize.js"></script>
+    <script src="/lib/ui-bootstrap-tpls-2.5.0.js"></script>
+</head>
+
+<style>
+      .panel > .panel-heading {
+          background-image: none;
+          background-color: #006666;
+          color: white;
+          border: 1px solid #006666; 
+      }
+
+      .panel {
+          border: 1px solid #006666;
+      }
+</style>
+
+<body>
+    <div ng-app="myApp" ng-controller="myCtrl" style="margin-left:10%;margin-right:10%;margin-top:50px;width:80%" >
+
+        <h1 style="text-align:center;font-size:450%;font-family:'Times New Roman'" >Book My Show</h1>
+        <br>
+        <br>
+
+        <ul class="nav nav-tabs">
+            <li class="active">
+                <a data-toggle="tab" href="#allmovies"><b>All active Surveys</b></a>
+            </li>
+            <li>
+                <a data-toggle="tab" href="#mymultiplexes" ng-click="getAllMultiplexes()"><b>Multiplexes</b></a>
+            </li>
+        </ul>
+    
+        <div class="tab-content">
+
+            <div id="allmovies" class="tab-pane fade in active">
+                <br>
+                <br>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div ng-repeat="movie in Movies">
+                                <button 
+                                    type="button" 
+                                    class="btn btn-default btn-lg btn-block"
+                                    ng-click="selectSurvey(survey)">
+                                        {{ movie.name }}
+                                </button>
+                                <br>
+                        </div>     
+                    </div>
+                    <div class="col-sm-8">
+                        <div class="well well-lg" ng-if="selectedMovie">
+                            <b>{{selectedMovie.name}}</b><br><br>
+                            <b>Description: </b> {{selectedSurvey.description}}<br><br>
+                            <div ng-repeat="question in selectedSurvey.questions">
+                                <br><br>
+                                <b> {{question.questionString}} </b>
+                                <br>
+                                <div ng-repeat="option in question.options" style="margin-left:7%">
+                                    {{option}}
+                                </div>
+                                <br>
+                                <input type="text" class="form-control" id="usr" ng-model="question.answer" ng-if="surveyActive">
+                            </div>
+
+                            <br>
+                            <br>
+                            <button type="button" ng-hide="surveyActive" class="btn btn-primary btn-block" ng-click="takeSurvey()">
+                                Take this survey
+                            </button>
+                            <button type="button" ng-if="surveyActive" class="btn btn-primary btn-block" ng-click="updateFeedback()">
+                                    Submit Results
+                            </button>   
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="mysurveys" class="tab-pane fade">
+                <br>
+                <br>
+                <div class="row">
+                    <div class="col-sm-4">
+                            <div ng-repeat="survey in userSurveys">
+                                    <button 
+                                        type="button" 
+                                        class="btn btn-default btn-lg btn-block"
+                                        ng-click="selectUserSurvey(survey)">
+                                            {{ survey.survey.heading }}
+                                    </button>
+                                    <br>
+                            </div>     
+                    </div>
+                    <div class="col-sm-8">
+                        <div class="well well-lg" ng-if="selectedUserSurvey">
+                            <b>{{selectedUserSurvey.survey.heading}}</b><br><br>
+                            <b>Description: </b> {{selectedUserSurvey.survey.description}}<br><br>
+
+                            <div ng-repeat="answer in selectedUserSurvey.answers">
+                                <br><br>
+                                <b> {{answer.question.questionString}} </b>
+                                <br>
+                                <div ng-repeat="option in answer.question.options" style="margin-left:7%">
+                                    {{option}}
+                                </div>
+                                <br>
+                                <b>Your answer : </b>{{answer.answer}}
+                            </div>
+
+
+                        </div>
+                    </div>                        
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</body>
+
+
+<script>
+    var app = angular.module('myApp', ['ui.bootstrap']);
+    app.controller('myCtrl', function($scope, $http, $timeout, $interval, $q) {
+        $scope.service_url = "http://localhost:8080/";
+        $scope.surveyActive = false
+
+        $scope.token = localStorage.getItem("token")
+        $scope.userName = localStorage.getItem("user_id")
+
+        function getAllMovies() {
+            $http(
+                {
+                    url: $scope.service_url + "bms/movies/",
+                    method: 'GET'
+                }
+            ).then(
+                function(response) {
+                    $scope.movies = response.data.responseData
+                    console.log($scope.activeSurveys)
+                }     
+            )
+        }
+        getActiveSurveys()
+
+
+        $scope.getUserSurveys = function() {
+            $http(
+                {
+                    url: $scope.service_url + "usersurvey/",
+                    method: 'GET',
+                    headers: {"token" : $scope.token}
+                }
+            ).then(
+                function(response) {
+                    $scope.userSurveys = response.data.responseData
+                    console.log($scope.userSurveys)
+                }     
+            )
+        }
+
+        $scope.selectSurvey = function(survey) {
+            $scope.selectedSurvey = survey
+            $scope.surveyActive = false
+        }
+
+        $scope.selectUserSurvey = function(survey) {
+            $scope.selectedUserSurvey = survey
+        }
+
+        $scope.takeSurvey = function() {
+            $scope.surveyActive = true
+        }
+
+        $scope.updateFeedback = function() {
+            var questions = $scope.selectedSurvey.questions
+            
+            var transformed = questions.map(
+                function(question) {
+                    var answer = question.answer
+                    delete question["answer"]
+                    return {question:question, answer:answer }
+                }
+            )
+            payload = {
+                userName :  $scope.userName,
+                survey : $scope.selectedSurvey,
+                answers : transformed
+            }
+
+            $http(
+                {
+                    url: $scope.service_url + "usersurvey/",
+                    method: 'POST',
+                    headers : {"token": $scope.token},
+                    data:payload
+                }
+            ).then(
+                function(response) {
+                    console.log(response.data)
+                }     
+            )
+
+        }
+
+
+    })
+</script>
+
+</html>

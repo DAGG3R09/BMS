@@ -8,13 +8,14 @@ type BookedTicket struct {
 	TicketID      int
 	PaymentStatus int
 	BookingUser   string
+	MovieName     string `json:"movie_name"`
 }
 
 // GetAllBookedTickets : Returns all BookedTickets form BookedTicketsDB
 func GetAllBookedTickets() []BookedTicket {
 	var bookedTickets []BookedTicket
 
-	rows, err := db.Query("Select * from BookedTicket")
+	rows, err := db.Query("Select * from BookedTickets")
 
 	if err != nil {
 		panic(err)
@@ -27,7 +28,8 @@ func GetAllBookedTickets() []BookedTicket {
 			&bookedTicket.ID,
 			&bookedTicket.TicketID,
 			&bookedTicket.PaymentStatus,
-			&bookedTicket.BookingUser)
+			&bookedTicket.BookingUser,
+			&bookedTicket.MovieName)
 
 		if err != nil {
 			panic(err)
@@ -42,13 +44,14 @@ func GetAllBookedTickets() []BookedTicket {
 func GetBookedTicketByBookingID(TicketID int) BookedTicket {
 	var bookedTicket BookedTicket
 
-	query := "Select * from users where booking_id=$1"
+	query := "Select * from BookedTickets where booking_id=$1"
 
 	err := db.QueryRow(query, TicketID).Scan(
 		&bookedTicket.ID,
 		&bookedTicket.TicketID,
 		&bookedTicket.PaymentStatus,
-		&bookedTicket.BookingUser)
+		&bookedTicket.BookingUser,
+		&bookedTicket.MovieName)
 
 	if err != nil {
 		return BookedTicket{}
@@ -57,17 +60,49 @@ func GetBookedTicketByBookingID(TicketID int) BookedTicket {
 	return bookedTicket
 }
 
+// GetBookedTicketByUserID : Returns BookedTicket associated with TicketID
+func GetBookedTicketByUserID(UserID int) []BookedTicket {
+	var bookedTickets []BookedTicket
+
+	query := "Select * from BookedTickets where booking_user=$1"
+
+	rows, err := db.Query(query, UserID)
+
+	if err != nil {
+		panic(err)
+	}
+
+	for rows.Next() {
+		var bt BookedTicket
+		err := rows.Scan(
+			&bt.ID,
+			&bt.TicketID,
+			&bt.PaymentStatus,
+			&bt.BookingUser,
+			&bt.MovieName)
+
+		if err != nil {
+			panic(err)
+		}
+
+		bookedTickets = append(bookedTickets, bt)
+	}
+
+	return bookedTickets
+}
+
 // GetBookedTicketByTicketID : Returns BookedTicket associated with TicketID
 func GetBookedTicketByTicketID(TicketID int) BookedTicket {
 	var bookedTicket BookedTicket
 
-	query := "Select * from users where ticket_id=$1"
+	query := "Select * from BookedTickets where ticket_id=$1"
 
 	err := db.QueryRow(query, TicketID).Scan(
 		&bookedTicket.ID,
 		&bookedTicket.TicketID,
 		&bookedTicket.PaymentStatus,
-		&bookedTicket.BookingUser)
+		&bookedTicket.BookingUser,
+		&bookedTicket.MovieName)
 
 	if err != nil {
 		return BookedTicket{}
@@ -77,13 +112,14 @@ func GetBookedTicketByTicketID(TicketID int) BookedTicket {
 }
 
 // CreateBookedTicket : Inserts Data into BookedTicket database
-func CreateBookedTicket(ticketID int, paymentStatus int, bookingUser string) {
+func CreateBookedTicket(ticketID int, paymentStatus int,
+	bookingUser int, movieName string) {
 
 	query := `Insert into BookedTickets 
-			(ticket_id, payment_status, booking_user) 
+			(payment_status, booking_user, movie_name) 
 			values ($1, $2, $3)`
 
-	err := db.QueryRow(query, ticketID, paymentStatus, bookingUser)
+	_, err := db.Exec(query, paymentStatus, bookingUser, movieName)
 
 	if err != nil {
 		log.Fatal("Error in inserting BookedTicket", err)
@@ -109,7 +145,8 @@ func GetAllBookedTicketsOfShow(showID int) []BookedTicket {
 			&bookedTicket.ID,
 			&bookedTicket.TicketID,
 			&bookedTicket.PaymentStatus,
-			&bookedTicket.BookingUser)
+			&bookedTicket.BookingUser,
+			&bookedTicket.MovieName)
 
 		if err != nil {
 			panic(err)

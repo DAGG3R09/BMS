@@ -1,6 +1,8 @@
 package servicehandlers
 
 import (
+	"bookmyshow/dao"
+	"bookmyshow/utils"
 	"net/http"
 )
 
@@ -15,7 +17,24 @@ func (p ShowHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Get : Restful Get Method
 func (p ShowHandler) Get(r *http.Request) SrvcRes {
-	return ResponseNotImplemented()
+	q := r.URL.Query()
+	movieID := q.Get("movie_id")
+	multiplexID := q.Get("multiplex_id")
+
+	if movieID == "" && multiplexID == "" {
+		return SimpleBadRequest("Bad Request")
+	} else if movieID != "" {
+		movieID := utils.StringToInteger(movieID)
+		shows := dao.GetShowsByMovieID(movieID)
+		return Response200OK(shows)
+
+	} else if multiplexID != "" {
+		multiplexID := utils.StringToInteger(multiplexID)
+		shows := dao.GetShowsByMultiplexID(multiplexID)
+		return Response200OK(shows)
+	} else {
+		return SimpleBadRequest("Bad Request")
+	}
 }
 
 // Put : Restful Put Method

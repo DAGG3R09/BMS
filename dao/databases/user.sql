@@ -11,41 +11,47 @@ drop table Movies;
 Create Table Movies (
     movie_id SERIAL PRIMARY KEY,
     name varchar(30) NOT NULL,
-    date_of_release varchar NOT NULL,
-    Rating float default 0.0
+    date_of_release date NOT NULL,
+    Rating float default 0.0,
+    description TEXT
 );
 
 drop table Multiplex;
 Create Table Multiplex(
-    multiplex_id int PRIMARY KEY,
-    name varchar(30) NOT NULL,
+    multiplex_id SERIAL PRIMARY KEY,
+    name varchar(30) Unique,
     screens int,
+    address TEXT
 );
 
 drop table Show;
 Create Table Show (
-    show_id int PRIMARY KEY,
-    movie_id int REFERENCES Movie(movie_id),
+    show_id SERIAL PRIMARY KEY,
+    movie_id int REFERENCES Movies(movie_id),
     multiplex_id int REFERENCES Multiplex(multiplex_id),
+    showdate date NOT NULL,
     showtime time NOT NULL,
     screen_no int,
+    movie_name varchar,
+    multiplex_name varchar    
 );
 
 
 drop table Ticket;
 Create Table Ticket (
-    ticket_id int PRIMARY KEY,
+    ticket_id SERIAL PRIMARY KEY,
     show_id int REFERENCES Show(show_id),
     price int
     booked boolean
 );
 
-drop table Booked_Tickets;
-Create table Booked_Tickets(
-    booking_id int PRIMARY KEY,
-    ticket_id int,
+drop table BookedTickets;
+Create table BookedTickets(
+    booking_id SERIAL PRIMARY KEY,
+    ticket_id Serial,
     Payment_status int,
-    booking_user varchar(30) REFERENCES Users(email)
+    booking_user int REFERENCES Users(user_id),
+    movie_name varchar
 );
 
 

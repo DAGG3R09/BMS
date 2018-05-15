@@ -6,17 +6,12 @@ import (
 
 // Movie : The Movie Table Schema
 type Movie struct {
-	ID            int
-	Name          string
-	DateOfRelease string
-	Rating        float32
+	ID            int     `json:"id"`
+	Name          string  `json:"name"`
+	DateOfRelease string  `json:"date_of_release"`
+	Rating        float32 `json:"rating"`
+	Description   string  `json:"description"`
 }
-
-// // MovieBody : The expected Json format for input from user
-// type MovieBody struct {
-// 	Name          string
-// 	DateOfRelease string
-// }
 
 // GetAllMovies : Returns all movies form MoviesDB
 func GetAllMovies() []Movie {
@@ -35,7 +30,8 @@ func GetAllMovies() []Movie {
 			&movie.ID,
 			&movie.Name,
 			&movie.DateOfRelease,
-			&movie.Rating)
+			&movie.Rating,
+			&movie.Description)
 
 		if err != nil {
 			panic(err)
@@ -56,7 +52,8 @@ func GetMovieByID(movieID int) Movie {
 		&movie.ID,
 		&movie.Name,
 		&movie.DateOfRelease,
-		&movie.Rating)
+		&movie.Rating,
+		&movie.Description)
 
 	if err != nil {
 		return Movie{}
@@ -75,7 +72,8 @@ func GetMoviesByName(name string) Movie {
 		&movie.ID,
 		&movie.Name,
 		&movie.DateOfRelease,
-		&movie.Rating)
+		&movie.Rating,
+		&movie.Description)
 
 	if err != nil {
 		fmt.Print(err)
@@ -86,9 +84,9 @@ func GetMoviesByName(name string) Movie {
 }
 
 // CreateMovie : Inserts Data into Movie database
-func CreateMovie(name string, dateOfRelease string) {
+func CreateMovie(name string, dateOfRelease string, description string) {
 
-	query := `Insert into movies (name, date_of_release) 
-			values ($1, $2)`
-	db.QueryRow(query, name, dateOfRelease)
+	query := `Insert into movies (name, date_of_release, description) 
+			values ($1, $2, $3)`
+	db.QueryRow(query, name, dateOfRelease, description)
 }

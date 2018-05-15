@@ -25,20 +25,20 @@ func (p MovieHandler) Get(r *http.Request) SrvcRes {
 	movieID := q.Get("movie_id")
 	movieName := q.Get("name")
 
-	if movieID != "" && movieName != "" {
-		return SimpleBadRequest("Bad Request")
+	if movieID == "" && movieName == "" {
+		movies := dao.GetAllMovies()
+		return Response200OK(movies)
 
 	} else if movieID != "" {
 		movieID := utils.StringToInteger(movieID)
 		movie := dao.GetMovieByID(movieID)
-		return Simple200OK(utils.StructToJSONString(movie))
+		return Response200OK(movie)
 
 	} else if movieName != "" {
 		movie := dao.GetMoviesByName(movieName)
-		return Simple200OK(utils.StructToJSONString(movie))
+		return Response200OK(movie)
 	} else {
-		movie := dao.GetAllMovies()
-		return Simple200OK(utils.StructToJSONString(movie))
+		return SimpleBadRequest("Bad Request")
 	}
 }
 
@@ -60,7 +60,7 @@ func (p MovieHandler) Post(r *http.Request) SrvcRes {
 		return SimpleBadRequest("Bad Request")
 	}
 
-	dao.CreateMovie(movie.Name, movie.DateOfRelease)
+	dao.CreateMovie(movie.Name, movie.DateOfRelease, movie.Description)
 
 	movie = dao.GetMoviesByName(movie.Name)
 	fmt.Println(movie)
