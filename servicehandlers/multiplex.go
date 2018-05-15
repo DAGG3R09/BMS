@@ -9,20 +9,21 @@ type MultiplexHandler struct {
 }
 
 func (p MultiplexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	methodRouter(p, w, r)
+	response := methodRouter(p, w, r)
+	response.(SrvcRes).RenderResponse(w)
 }
 
 // Get : Restful Get Method
-func (p MultiplexHandler) Get(r *http.Request) (string, int) {
-	return "GET Called", 200
+func (p MultiplexHandler) Get(r *http.Request) SrvcRes {
+	return ResponseNotImplemented()
 }
 
 // Put : Restful Put Handler
-func (p MultiplexHandler) Put(r *http.Request) (string, int) {
-	return "PUT Called", 200
+func (p MultiplexHandler) Put(r *http.Request) SrvcRes {
+	return ResponseNotImplemented()
 }
 
 // Post : Restful Post Handler
-func (p MultiplexHandler) Post(r *http.Request) (string, int) {
-	return "POST Called", 200
+func (p MultiplexHandler) Post(r *http.Request) SrvcRes {
+	return ResponseNotImplemented()
 }

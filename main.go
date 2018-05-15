@@ -9,6 +9,9 @@ import (
 
 func main() {
 
+	// Serves the html pages
+	http.Handle("/", http.FileServer(http.Dir("./static")))
+
 	p := servicehandlers.PingHandler{}
 	u := servicehandlers.UserHandler{}
 	m := servicehandlers.MovieHandler{}

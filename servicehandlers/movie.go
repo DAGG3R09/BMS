@@ -14,40 +14,41 @@ type MovieHandler struct {
 }
 
 func (p MovieHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	methodRouter(p, w, r)
+	response := methodRouter(p, w, r)
+	response.(SrvcRes).RenderResponse(w)
 }
 
 // Get : Restful Get Method
-func (p MovieHandler) Get(r *http.Request) (string, int) {
+func (p MovieHandler) Get(r *http.Request) SrvcRes {
 
 	q := r.URL.Query()
 	movieID := q.Get("movie_id")
 	movieName := q.Get("name")
 
 	if movieID != "" && movieName != "" {
-		return "Bad Request", 400
+		return SimpleBadRequest("Bad Request")
 
 	} else if movieID != "" {
 		movieID := utils.StringToInteger(movieID)
 		movie := dao.GetMovieByID(movieID)
-		return utils.StructToJSONString(movie), 200
+		return Simple200OK(utils.StructToJSONString(movie))
 
 	} else if movieName != "" {
 		movie := dao.GetMoviesByName(movieName)
-		return utils.StructToJSONString(movie), 200
+		return Simple200OK(utils.StructToJSONString(movie))
 	} else {
 		movie := dao.GetAllMovies()
-		return utils.StructToJSONString(movie), 200
+		return Simple200OK(utils.StructToJSONString(movie))
 	}
 }
 
 // Put : Restful Put Method
-func (p MovieHandler) Put(r *http.Request) (string, int) {
-	return "PUT Called", 200
+func (p MovieHandler) Put(r *http.Request) SrvcRes {
+	return ResponseNotImplemented()
 }
 
 // Post : Restful Post Method
-func (p MovieHandler) Post(r *http.Request) (string, int) {
+func (p MovieHandler) Post(r *http.Request) SrvcRes {
 
 	var movie dao.Movie
 	decoder := json.NewDecoder(r.Body)
@@ -56,7 +57,7 @@ func (p MovieHandler) Post(r *http.Request) (string, int) {
 	if err != nil {
 		// log.Fatal(err)
 		fmt.Println(err)
-		return "Bad Request", 400
+		return SimpleBadRequest("Bad Request")
 	}
 
 	dao.CreateMovie(movie.Name, movie.DateOfRelease)
@@ -65,5 +66,5 @@ func (p MovieHandler) Post(r *http.Request) (string, int) {
 	fmt.Println(movie)
 	fmt.Println(movie.ID, strconv.Itoa(movie.ID))
 
-	return "Movie ID: " + strconv.Itoa(movie.ID), 200
+	return Simple200OK("Movie ID: " + strconv.Itoa(movie.ID))
 }

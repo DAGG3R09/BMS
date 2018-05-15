@@ -11,22 +11,23 @@ type UserHandler struct {
 }
 
 func (p UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	methodRouter(p, w, r)
+	response := methodRouter(p, w, r)
+	response.(SrvcRes).RenderResponse(w)
 }
 
 // Get : Restful Get Method
-func (p UserHandler) Get(r *http.Request) (string, int) {
+func (p UserHandler) Get(r *http.Request) SrvcRes {
 	users := dao.GetUserByEmail("sufiyan@gmail.com")
 	fmt.Println(users)
-	return "GET Called", 200
+	return Response200OK("Users: ok")
 }
 
 // Put : Restful Put Method
-func (p UserHandler) Put(r *http.Request) (string, int) {
-	return "PUT Called", 200
+func (p UserHandler) Put(r *http.Request) SrvcRes {
+	return ResponseNotImplemented()
 }
 
 // Post : Restful Post Method
-func (p UserHandler) Post(r *http.Request) (string, int) {
-	return "POST Called", 200
+func (p UserHandler) Post(r *http.Request) SrvcRes {
+	return ResponseNotImplemented()
 }

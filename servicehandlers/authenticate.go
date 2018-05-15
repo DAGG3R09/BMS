@@ -11,21 +11,22 @@ type AuthenticateHandler struct {
 }
 
 func (p AuthenticateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	methodRouter(p, w, r)
+	response := methodRouter(p, w, r)
+	response.(SrvcRes).RenderResponse(w)
 }
 
 // Get : Restful Get Method
-func (p AuthenticateHandler) Get(r *http.Request) (string, int) {
-	return "AUTHENTICATE GET Called", 200
+func (p AuthenticateHandler) Get(r *http.Request) SrvcRes {
+	return ResponseNotImplemented()
 }
 
 // Put : Restful PUT Method
-func (p AuthenticateHandler) Put(r *http.Request) (string, int) {
-	return "AUTHENTICATE PUT Called", 200
+func (p AuthenticateHandler) Put(r *http.Request) SrvcRes {
+	return ResponseNotImplemented()
 }
 
 // Post : Restful Post Method
-func (p AuthenticateHandler) Post(r *http.Request) (string, int) {
+func (p AuthenticateHandler) Post(r *http.Request) SrvcRes {
 
 	type authenticateBody struct {
 		Email    string
@@ -41,10 +42,10 @@ func (p AuthenticateHandler) Post(r *http.Request) (string, int) {
 	}
 
 	if !dao.AuthenticateUser(payload.Email, payload.Password) {
-		return "Invalid Email or Password", 400
+		return SimpleBadRequest("Invalid Email or Password")
 	}
 	user := dao.GetUserByEmail(payload.Email)
 	// token := dao.CreateSession(user.ID)
 
-	return user.Email, 200
+	return Response200OK(user.Email)
 }

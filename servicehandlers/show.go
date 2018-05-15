@@ -9,20 +9,21 @@ type ShowHandler struct {
 }
 
 func (p ShowHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	methodRouter(p, w, r)
+	response := methodRouter(p, w, r)
+	response.(SrvcRes).RenderResponse(w)
 }
 
 // Get : Restful Get Method
-func (p ShowHandler) Get(r *http.Request) (string, int) {
-	return "GET Called", 200
+func (p ShowHandler) Get(r *http.Request) SrvcRes {
+	return ResponseNotImplemented()
 }
 
 // Put : Restful Put Method
-func (p ShowHandler) Put(r *http.Request) (string, int) {
-	return "PUT Called", 200
+func (p ShowHandler) Put(r *http.Request) SrvcRes {
+	return ResponseNotImplemented()
 }
 
 // Post : Restful Post Handler
-func (p ShowHandler) Post(r *http.Request) (string, int) {
-	return "POST Called", 200
+func (p ShowHandler) Post(r *http.Request) SrvcRes {
+	return ResponseNotImplemented()
 }

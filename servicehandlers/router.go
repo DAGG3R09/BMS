@@ -1,29 +1,31 @@
 package servicehandlers
 
 import (
-	"fmt"
 	"net/http"
 )
 
 // HTTPServiceHandler : Restful Http Handler
 type HTTPServiceHandler interface {
-	Get(*http.Request) (string, int)
-	Put(*http.Request) (string, int)
-	Post(*http.Request) (string, int)
+	Get(*http.Request) SrvcRes
+	Put(*http.Request) SrvcRes
+	Post(*http.Request) SrvcRes
 }
 
-func methodRouter(p HTTPServiceHandler, w http.ResponseWriter, r *http.Request) {
+// var maxCount = 10
+// var req = make(q5.Semaphore, maxCount)
 
-	var response string
-	var status int
+func methodRouter(p HTTPServiceHandler, w http.ResponseWriter, r *http.Request) interface{} {
+	var response interface{}
+
+	// req.P(1) // Acquire Resource Q5
 	if r.Method == "GET" {
-		response, status = p.Get(r)
+		response = p.Get(r)
 	} else if r.Method == "PUT" {
-		response, status = p.Put(r)
+		response = p.Put(r)
 	} else if r.Method == "POST" {
-		response, status = p.Post(r)
+		response = p.Post(r)
 	}
-	w.WriteHeader(status)
-	fmt.Fprintf(w, response)
 
+	// req.V(1) // Release resource before response -Q5
+	return response
 }
